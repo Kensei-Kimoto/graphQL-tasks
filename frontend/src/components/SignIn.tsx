@@ -13,6 +13,7 @@ import { useState } from 'react';
 import { useMutation } from '@apollo/client';
 import { SignInResponse } from '../types/signInResponse';
 import { SIGN_IN } from '../mutations/authMutations';
+import { useNavigate } from 'react-router-dom';
 
 const theme = createTheme();
 
@@ -21,6 +22,7 @@ export default function SignIn() {
   const [password, setPassword] = useState('');
   const [failSignIn, setFailSignIn] = useState(false);
   const [signIn] = useMutation<SignInResponse>(SIGN_IN);
+  const navigate = useNavigate();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -29,15 +31,18 @@ export default function SignIn() {
       const result = await signIn({
         variables: {signInInput}
       });
-      console.log(result);
+      if(result.data) {
+        localStorage.setItem('token',result.data.signIn.accessToken);
+      }
+      localStorage.getItem('token') && navigate('/');
     } catch(err: any) {
+      if (err.message === 'Unauthorized') {
+        setFailSignIn(true);
+        return;
+      }
       console.log(err.message)
+      alert('予期せぬエラーが発生しました');
     }
-
-    console.log({
-      email,
-      password,
-    });
   };
 
   return (
@@ -83,6 +88,9 @@ export default function SignIn() {
               value={password}
               onChange={(e) => {setPassword(e.target.value)}}
             />
+            { failSignIn && <Typography 
+            color='red'>メールアドレスまたはパスワードを確認してください
+            </Typography>}
             <Button
               type="submit"
               fullWidth
