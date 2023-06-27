@@ -122,7 +122,7 @@ export default function AddTask({userId}: {userId: number}) {
             multiline
             rows={4}
             value={description}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => setDescription(e.target.value)}
           />
         </DialogContent>
         <DialogActions>
